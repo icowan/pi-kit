@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/go-kit/log"
+	"github.com/icowan/pi-kit/src/api"
 	"github.com/icowan/pi-kit/src/logging"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
@@ -34,7 +35,7 @@ func (c PiConnect) String() string {
 }
 
 const (
-	DefaultCmdCameraJpeg        = "/usr/bin/libcamera-jpeg" // LibCameraJpeg 命令
+	DefaultCmdCameraJpegBin     = "/usr/bin/libcamera-jpeg" // LibCameraJpeg 命令
 	DefaultCameraJpegOutputPath = "/home/pi/camera"         // 照片存储路径
 
 	DefaultPiConnect  = "Local"     // Local: 本地; Remote: 远程
@@ -68,6 +69,8 @@ var (
 	db      *sql.DB
 	err     error
 
+	apiSvc api.Service
+
 	goOS                            = runtime.GOOS
 	goArch                          = runtime.GOARCH
 	goVersion                       = runtime.Version()
@@ -76,9 +79,9 @@ var (
 
 	serverLogPath, serverLogName, serverLogLevel string
 
-	cameraJpegOutputPath                  string
-	piConnect, piHost, piUser, piPassword string
-	piSSHPort                             int
+	cmdCameraJpegBin, cameraJpegOutputPath string
+	piConnect, piHost, piUser, piPassword  string
+	piSSHPort                              int
 
 	rootCmd = &cobra.Command{
 		Use:               "pi-kit",
@@ -161,7 +164,8 @@ Platform: ` + goOS + "/" + goArch + `
 	//rootCmd.PersistentFlags().IntVar(&corsMaxAge, "cors.max.age", DefaultCORSMaxAge, "允许跨域访问的最大时间")
 	//rootCmd.PersistentFlags().IntVar(&maxCacheTTL, "cache.max.ttl", DefaultMaxCacheTTL, "缓存最大存活时间")
 
-	cameraJpegCmd.PersistentFlags().StringVarP(&cameraJpegOutputPath, "output.path", "o", DefaultCameraJpegOutputPath, "照片存储路径")
+	cameraJpegCmd.PersistentFlags().StringVarP(&cameraJpegOutputPath, "camera.jpeg.output.path", "o", DefaultCameraJpegOutputPath, "照片存储路径")
+	cameraJpegCmd.PersistentFlags().StringVar(&cmdCameraJpegBin, "cmd.camera.jpeg.bin", DefaultCmdCameraJpegBin, "拍照命令路径")
 
 	cameraCmd.AddCommand(cameraJpegCmd)
 
@@ -205,6 +209,6 @@ func addFlags(rootCmd *cobra.Command) {
 
 func prepare(ctx context.Context) error {
 	logger = logging.SetLogging(logger, serverLogPath, serverLogName, serverLogLevel)
-
+	apiSvc = api.New()
 	return nil
 }

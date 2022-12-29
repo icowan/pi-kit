@@ -11,7 +11,9 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
+	"net"
 	"os"
 	"strings"
 
@@ -19,7 +21,6 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 var (
@@ -61,6 +62,37 @@ func cameraJpegOutput(ctx context.Context, outputPath string) (err error) {
 	if strings.EqualFold(PiConnect(piConnect).String(), PiConnectRemote.String()) {
 		host := fmt.Sprintf("%s:%d", piHost, piSSHPort)
 
+		sshCli, err := apiSvc.SSHClient(ctx).Connection(ctx, host, piUser, piPassword)
+		if err != nil {
+			_ = level.Error(logger).Log("apiSvc.SSHClient", "Connection", "err", err.Error())
+			return errors.Wrap(err, "apiSvc.SSHClient.Connection")
+		}
+		sess, err := sshCli.NewSession()
+		if err != nil {
+			_ = level.Error(logger).Log("sshCli", "NewSession", "err", err.Error())
+			return errors.Wrap(err, "sshCli.NewSession")
+		}
+		defer func(sess *ssh.Session) {
+			if sessErr := sess.Close(); sessErr != nil {
+				_ = level.Error(logger).Log("session", "Close", "err", err.Error())
+			}
+		}(sess)
+
+		cmds := []string{
+			cmdCameraJpegBin,
+			"--output",
+			cameraJpegOutputPath,
+		}
+		cmd := strings.Join(cmds, " ")
+		_ = level.Info(logger).Log("cmd", cmd)
+		//err = sess.Run(cmd)
+		outBytes, err := sess.CombinedOutput(cmd)
+		if err != nil {
+			_ = level.Warn(logger).Log("session", "Output", "err", err.Error())
+		}
+		fmt.Println(string(outBytes))
+		return nil
+
 		//pKey, _ := ioutil.ReadFile("~/.ssh/id_rsa")
 		//pKey := []byte("<privateKey>")
 		//fmt.Println(string(pKey))
@@ -71,23 +103,22 @@ func cameraJpegOutput(ctx context.Context, outputPath string) (err error) {
 		//	_ = level.Warn(logger).Log("ssh", "ParsePrivateKey", "err", err.Error())
 		//}
 
-		var hostkeyCallback ssh.HostKeyCallback
-		hostkeyCallback, err = knownhosts.New("~/.ssh/known_hosts")
-		if err != nil {
-			_ = level.Warn(logger).Log("knownhosts", "New", "err", err.Error())
-		}
+		//var hostkeyCallback ssh.HostKeyCallback
+		//hostkeyCallback, err = knownhosts.New("~/.ssh/known_hosts")
+		//if err != nil {
+		//	_ = level.Warn(logger).Log("knownhosts", "New", "err", err.Error())
+		//}
 
-		conf := &ssh.ClientConfig{
-			User:            piUser,
-			HostKeyCallback: hostkeyCallback,
+		sshConfig := &ssh.ClientConfig{
+			User: piUser,
 			Auth: []ssh.AuthMethod{
 				ssh.Password(piPassword),
-				//ssh.PublicKeys(signer),
 			},
+			HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error { return nil }),
 		}
-		var conn *ssh.Client
 
-		conn, err = ssh.Dial("tcp", host, conf)
+		var conn *ssh.Client
+		conn, err = ssh.Dial("tcp", host, sshConfig)
 		if err != nil {
 			_ = level.Error(logger).Log("ssh", "Dial", "err", err.Error())
 			return err
