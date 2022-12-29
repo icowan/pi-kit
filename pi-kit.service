@@ -1,0 +1,21 @@
+[Unit]
+Description=pi-kit: The pi-kit core service
+Documentation=https://github.com/icowan/pi-kit
+
+[Service]
+Type=simple
+EnvironmentFile=-/etc/sysconfig/pi-kit
+ExecStart=/usr/local/bin/pi-kit start
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutSec=0
+RestartSec=3
+Restart=always
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Delegate=yes
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
