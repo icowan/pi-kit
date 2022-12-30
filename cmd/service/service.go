@@ -35,8 +35,8 @@ func (c PiConnect) String() string {
 }
 
 const (
-	DefaultCmdCameraJpegBin     = "/usr/bin/libcamera-jpeg" // LibCameraJpeg 命令
-	DefaultCameraJpegOutputPath = "/home/pi/camera"         // 照片存储路径
+	DefaultCmdCameraJpegBin = "/usr/bin/libcamera-jpeg" // LibCameraJpeg 命令
+	DefaultCameraJpegOutput = "/tmp/image.jpeg"         // 照片存储路径
 
 	DefaultPiConnect  = "Local"     // Local: 本地; Remote: 远程
 	DefaultPiHost     = "127.0.0.1" // 树莓派地址
@@ -48,8 +48,8 @@ const (
 	DefaultServerLogPath  = ""
 	DefaultServerLogName  = "kplcloud.log"
 
-	EnvCmdCameraJpeg        = "ENV_CMD_CAMERA_JPEG"
-	EnvCameraJpegOutputPath = "ENV_CAMERA_JPEG_OUTPUT_PATH"
+	EnvCmdCameraJpegBin = "ENV_CMD_CAMERA_JPEG_BIN"
+	EnvCameraJpegOutput = "ENV_CAMERA_JPEG_OUTPUT"
 
 	EnvPiConnect  = "ENV_PI_CONNECT"
 	EnvPiHost     = "ENV_PI_HOST"
@@ -79,9 +79,9 @@ var (
 
 	serverLogPath, serverLogName, serverLogLevel string
 
-	cmdCameraJpegBin, cameraJpegOutputPath string
-	piConnect, piHost, piUser, piPassword  string
-	piSSHPort                              int
+	cmdCameraJpegBin, cameraJpegOutput    string
+	piConnect, piHost, piUser, piPassword string
+	piSSHPort                             int
 
 	rootCmd = &cobra.Command{
 		Use:               "pi-kit",
@@ -164,7 +164,7 @@ Platform: ` + goOS + "/" + goArch + `
 	//rootCmd.PersistentFlags().IntVar(&corsMaxAge, "cors.max.age", DefaultCORSMaxAge, "允许跨域访问的最大时间")
 	//rootCmd.PersistentFlags().IntVar(&maxCacheTTL, "cache.max.ttl", DefaultMaxCacheTTL, "缓存最大存活时间")
 
-	cameraJpegCmd.PersistentFlags().StringVarP(&cameraJpegOutputPath, "camera.jpeg.output.path", "o", DefaultCameraJpegOutputPath, "照片存储路径")
+	cameraJpegCmd.PersistentFlags().StringVarP(&cameraJpegOutput, "camera.jpeg.output", "o", DefaultCameraJpegOutput, "照片存储")
 	cameraJpegCmd.PersistentFlags().StringVar(&cmdCameraJpegBin, "cmd.camera.jpeg.bin", DefaultCmdCameraJpegBin, "拍照命令路径")
 
 	cameraCmd.AddCommand(cameraJpegCmd)
@@ -178,7 +178,8 @@ func Run() {
 	serverLogPath = envString(EnvServerLogPath, DefaultServerLogPath)
 	serverLogName = envString(EnvServerLogName, DefaultServerLogName)
 
-	cameraJpegOutputPath = envString(EnvCameraJpegOutputPath, DefaultCameraJpegOutputPath)
+	cameraJpegOutput = envString(EnvCameraJpegOutput, DefaultCameraJpegOutput)
+	cmdCameraJpegBin = envString(EnvCmdCameraJpegBin, DefaultCmdCameraJpegBin)
 
 	piConnect = envString(EnvPiConnect, DefaultPiConnect)
 	piHost = envString(EnvPiHost, DefaultPiHost)

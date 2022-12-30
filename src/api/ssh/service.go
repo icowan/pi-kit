@@ -9,32 +9,21 @@ package ssh
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"golang.org/x/crypto/ssh"
-	"net"
 )
 
 type Service interface {
-	Connection(ctx context.Context, host, user, password string) (res *ssh.Client, err error)
+	Connection(ctx context.Context, host, user, password, keyFile string) (res *Client, err error)
 }
 
 type service struct {
 }
 
-func (s *service) Connection(ctx context.Context, host, user, password string) (res *ssh.Client, err error) {
-	sshConfig := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-		},
-		HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error { return nil }),
-	}
-
-	conn, err := ssh.Dial("tcp", host, sshConfig)
+func (s *service) Connection(ctx context.Context, host, user, password, keyFile string) (res *Client, err error) {
+	client, err := DialWithKey(host, user, keyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "ssh.Dial")
+		return DialWithPasswd(host, user, password)
 	}
-	return conn, nil
+	return client, nil
 }
 
 func New() Service {
