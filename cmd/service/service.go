@@ -46,7 +46,7 @@ const (
 
 	DefaultServerLogLevel = "all"
 	DefaultServerLogPath  = ""
-	DefaultServerLogName  = "kplcloud.log"
+	DefaultServerLogName  = "pi-kit.log"
 
 	EnvCmdCameraJpegBin = "ENV_CMD_CAMERA_JPEG_BIN"
 	EnvCameraJpegOutput = "ENV_CAMERA_JPEG_OUTPUT"
