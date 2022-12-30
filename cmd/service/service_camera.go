@@ -49,7 +49,7 @@ pi-kit camera jpeg -h
 			// 关闭资源连接
 			hour := time.Now().Hour()
 			if hour < 7 || hour > 18 {
-				_ = level.Info(logger).Log("hour", hour, "msg", "不在7pm~6pm时间不拍")
+				_ = level.Info(logger).Log("hour", hour, "msg", "不在7am~6pm时间不拍")
 				return nil
 			}
 			return cameraJpegOutputExec(cmd.Context(), cameraJpegOutput)
