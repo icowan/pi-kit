@@ -6,10 +6,7 @@
 .idea/
 *.log
 app.cfg
-app.test.cfg
-config.yaml
-kplcloud.sh
 logs
-web/v2/
 .env
 ./.env
+pi-kit

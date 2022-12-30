@@ -12,7 +12,7 @@ HUB_ADDR = hub.nsini.com
 DOCKER_USER =
 DOCKER_PWD =
 VERSION = $(shell git describe --tags --always --dirty)
-GO_LDFLAGS = -ldflags="-X 'github.com/pi-kit/pi-kit/cmd/service.version=$(VERSION)' -X 'github.com/pi-kit/pi-kit/cmd/service.buildDate=$(BUILD_TIME)' -X 'github.com/pi-kit/pi-kit/cmd/service.gitCommit=$(shell git rev-parse --short HEAD)' -X 'github.com/pi-kit/pi-kit/cmd/service.gitBranch=$(shell git rev-parse --abbrev-ref HEAD)'"
+GO_LDFLAGS = -ldflags="-X 'github.com/icowan/pi-kit/cmd/service.version=$(VERSION)' -X 'github.com/icowan/pi-kit/cmd/service.buildDate=$(BUILD_TIME)' -X 'github.com/icowan/pi-kit/cmd/service.gitCommit=$(shell git rev-parse --short HEAD)' -X 'github.com/icowan/pi-kit/cmd/service.gitBranch=$(shell git rev-parse --abbrev-ref HEAD)'"
 NAMESPACE = pi-kit
 PWD = $(shell pwd)
 
@@ -39,14 +39,8 @@ build-linux:
 build-windows:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -v -o $(BINARY_WINDOWS) $(GO_LDFLAGS) ./cmd/main.go
 
-login:
-	docker login -u $(DOCKER_USER) -p $(DOCKER_PWD) $(HUB_ADDR)
-
-build-docker:
-	docker build --rm -t $(HUB_ADDR)/$(NAMESPACE)/$(APPNAME):$(VERSION) .
-
-push-docker:
-	docker push $(HUB_ADDR)/$(NAMESPACE)/$(APPNAME):$(VERSION)
+build-arm:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -v -o pi-kit $(GO_LDFLAGS) ./cmd/main.go
 
 build:
 	CGO_ENABLED=0 $(GOBUILD) -v -o $(BINARY_UNIX) $(GO_LDFLAGS) ./cmd/main.go

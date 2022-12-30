@@ -10,15 +10,15 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
-	"os"
-	"os/exec"
-	"strings"
-	"time"
-
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
+	"time"
 )
 
 var (
@@ -59,13 +59,14 @@ func cameraJpegOutputExec(ctx context.Context, outputPath string) (err error) {
 	if strings.EqualFold(outputPath, "") {
 		outputPath, _ = os.Getwd()
 	}
-	outputPath = fmt.Sprintf("%s/camera-%s.jpeg", outputPath, time.Now().Format("20060102150405"))
+	outputPath = path.Join(outputPath, fmt.Sprintf("camera-%s.jpeg", time.Now().Format("20060102150405")))
 	logger = log.With(logger, "cameraJpegCmd", "cameraJpegOutput", "outputPath", outputPath)
 	if strings.EqualFold(PiConnect(piConnect).String(), PiConnectRemote.String()) {
+		_ = level.Debug(logger).Log("piConnect", piConnect, "msg", "远程执行")
 		cmds := []string{
 			cmdCameraJpegBin,
 			"--output",
-			cameraJpegOutput,
+			outputPath,
 		}
 		cmd := strings.Join(cmds, " ")
 		_ = level.Info(logger).Log("cmd", cmd)
@@ -86,16 +87,17 @@ func cameraJpegOutputExec(ctx context.Context, outputPath string) (err error) {
 			_ = level.Error(logger).Log("sshCli.Cmd", "Output", "err", err.Error())
 			return errors.Wrap(err, "sshCli.Cmd.Output")
 		}
-
 		fmt.Println(string(outBytes))
+		_ = level.Info(logger).Log("msg", "图片生成成功", "outputPath", outputPath)
 		return nil
 	}
-	outBytes, err := exec.CommandContext(ctx, cmdCameraJpegBin, "-output", outputPath).Output()
+	_ = level.Debug(logger).Log("piConnect", piConnect, "msg", "本地执行")
+	outBytes, err := exec.CommandContext(ctx, cmdCameraJpegBin, "--output", outputPath).CombinedOutput()
 	if err != nil {
 		_ = level.Error(logger).Log("exec", "CommandContext", "err", err.Error())
 		return errors.Wrap(err, "exec.CommandContext")
 	}
-	_ = level.Info(logger).Log("exec.CommandContext", "success")
 	fmt.Println(string(outBytes))
+	_ = level.Info(logger).Log("msg", "图片生成成功", "outputPath", outputPath, "exec.CommandContext", "success")
 	return
 }

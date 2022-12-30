@@ -36,7 +36,7 @@ func (c PiConnect) String() string {
 
 const (
 	DefaultCmdCameraJpegBin = "/usr/bin/libcamera-jpeg" // LibCameraJpeg 命令
-	DefaultCameraJpegOutput = "/tmp/image.jpeg"         // 照片存储路径
+	DefaultCameraJpegOutput = "/tmp/"                   // 照片存储路径
 
 	DefaultPiConnect  = "Local"     // Local: 本地; Remote: 远程
 	DefaultPiHost     = "127.0.0.1" // 树莓派地址
