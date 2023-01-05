@@ -83,13 +83,13 @@ func SetLogging(logger kitlog.Logger, logPath, logFileName, legLevel string) kit
 		logger = defaultLogger(fmt.Sprintf("%s/%s", logPath, logFileName))
 		logger = kitlog.WithPrefix(logger, "ts", kitlog.TimestampFormat(func() time.Time {
 			return time.Now()
-		}, "2006-01-02 15:04:05"))
+		}, "2006-01-02 15:04:05.000"))
 	} else {
 		//logger = kitlog.NewLogfmtLogger(kitlog.StdlibWriter{})
 		logger = term.NewLogger(os.Stdout, kitlog.NewLogfmtLogger, colorFunc())
 		logger = kitlog.WithPrefix(logger, "ts", kitlog.TimestampFormat(func() time.Time {
 			return time.Now()
-		}, "2006-01-02 15:04:05"))
+		}, "2006-01-02 15:04:05.000"))
 	}
 	logger = level.NewFilter(logger, logLevel(legLevel))
 	logger = kitlog.With(logger, "caller", kitlog.DefaultCaller)

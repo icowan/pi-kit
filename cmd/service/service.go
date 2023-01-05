@@ -169,8 +169,10 @@ Platform: ` + goOS + "/" + goArch + `
 
 	cameraCmd.AddCommand(cameraJpegCmd)
 
+	wifiCmd.AddCommand(wifiTestCmd)
+
 	addFlags(rootCmd)
-	rootCmd.AddCommand(cameraCmd)
+	rootCmd.AddCommand(cameraCmd, wifiCmd)
 }
 
 func Run() {
